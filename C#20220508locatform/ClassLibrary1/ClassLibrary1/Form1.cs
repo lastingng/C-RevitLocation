@@ -464,6 +464,11 @@ namespace ClassLibrary1
         private void button6_Click(object sender, EventArgs e)
         {
             FilteredElementCollector collector = new FilteredElementCollector(doc).OfClass(typeof(RevitLinkInstance));
+
+            foreach (Element ele in collector)
+            {
+                label1.Text += "\n" + ele.Name;
+            }
         }
     }
 }
