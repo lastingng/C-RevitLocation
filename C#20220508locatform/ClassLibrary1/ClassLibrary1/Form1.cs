@@ -18,17 +18,18 @@ namespace ClassLibrary1
     {
         UIDocument uidoc;
         Document doc;
+        UIApplication uiapp;
         Autodesk.Revit.UI.Selection.Selection sel;
 
 
 
-        public Form1(UIDocument _uidoc, Document _doc, Autodesk.Revit.UI.Selection.Selection _sel)
+        public Form1(UIDocument _uidoc, Document _doc, Autodesk.Revit.UI.Selection.Selection _sel, UIApplication _uiapp)
         {
             InitializeComponent();
             uidoc = _uidoc;
             doc = _doc;
             sel = _sel;
-
+            uiapp = _uiapp;
             this.Load += Form1_Load;
 
         }
@@ -463,12 +464,19 @@ namespace ClassLibrary1
 
         private void button6_Click(object sender, EventArgs e)
         {
-            FilteredElementCollector collector = new FilteredElementCollector(doc).OfClass(typeof(RevitLinkInstance));
+            ICollection<Reference> references = linkedObjects(uiapp);
 
-            foreach (Element ele in collector)
+            foreach (Reference ele in references)
             {
-                label1.Text += "\n" + ele.Name;
+                label1.Text += "\n" + ele.ElementId.ToString();
             }
+
+        }
+
+        public ICollection<Reference> linkedObjects(UIApplication uiapp)
+        {
+
+            return uiapp.ActiveUIDocument.Selection.PickObjects(ObjectType.LinkedElement, "Pick Objects");
         }
     }
 }

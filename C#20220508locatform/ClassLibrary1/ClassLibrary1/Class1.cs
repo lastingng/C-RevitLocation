@@ -16,11 +16,12 @@ namespace ClassLibrary1
         public Result Execute(ExternalCommandData commandData, ref string message, ElementSet elements)
         {
             UIDocument uidoc = commandData.Application.ActiveUIDocument;
+            UIApplication uiapp = commandData.Application;
             Document doc = uidoc.Document;
             Autodesk.Revit.UI.Selection.Selection seletedElement = uidoc.Selection;
 
             Application.EnableVisualStyles();
-            Application.Run(new Form1(uidoc, doc, seletedElement));
+            Application.Run(new Form1(uidoc, doc, seletedElement, uiapp));
 
             return Result.Succeeded;
         }
