@@ -111,7 +111,7 @@ namespace ClassLibrary1
             transaction.Commit();
         }
 
-        private void label1_Click(object sender, EventArgs e)
+        public void label1_Click(object sender, EventArgs e)
         {
 
         }
@@ -457,26 +457,52 @@ namespace ClassLibrary1
                 else if (Lc != null)
                 {
                     label1.Text += "\n" + ele.Name;
-                    label2.Text += "\n" + Lc.Curve.GetEndPoint(1).ToString() + " " + Lc.Curve.GetEndPoint(0).ToString();
+                    label4.Text += "\n" + Lc.Curve.GetEndPoint(1).ToString() + " " + Lc.Curve.GetEndPoint(0).ToString();
                 }
             }
         }
 
         private void button6_Click(object sender, EventArgs e)
         {
-            ICollection<Reference> references = linkedObjects(uiapp);
 
-            foreach (Reference ele in references)
+            ISelectionFilter selFilter = new SelectionFilter();
+            IList<Reference> references = uiapp.ActiveUIDocument.Selection.PickObjects(ObjectType.LinkedElement,selFilter, "pick Objects");
+
+            MessageBox.Show(references.Count.ToString());
+            foreach (Reference refElemLinked in references)
             {
-                label1.Text += "\n" + ele.ElementId.ToString();
+                RevitLinkInstance elem = doc.GetElement(refElemLinked.ElementId) as RevitLinkInstance;
+                Document docLinked = elem.GetLinkDocument();
+                Element linkedelement = docLinked.GetElement(refElemLinked.LinkedElementId);
+                label1.Text += "\n" + linkedelement.Name;
+                label4.Text += "\n" + linkedelement.Category.Name.ToString();
             }
 
         }
 
-        public ICollection<Reference> linkedObjects(UIApplication uiapp)
+        public class SelectionFilter : ISelectionFilter
         {
+            RevitLinkInstance rvtIns = null;
+            public bool AllowElement(Element element)
+            {
 
-            return uiapp.ActiveUIDocument.Selection.PickObjects(ObjectType.LinkedElement, "Pick Objects");
+                if (element is RevitLinkInstance)
+                {
+                    rvtIns = element as RevitLinkInstance;
+                    return true;
+                }
+                return false;
+            }
+            public bool AllowReference(Reference reference, XYZ position)
+            {
+                Document doc = rvtIns.GetLinkDocument();
+                Element element = doc.GetElement(reference.LinkedElementId);
+                if (element.Category.Name is "Walls")
+                {
+                    return true;
+                }
+                return false;
+            }
         }
     }
 }
