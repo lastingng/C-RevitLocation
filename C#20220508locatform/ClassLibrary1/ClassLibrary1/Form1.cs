@@ -474,6 +474,10 @@ namespace ClassLibrary1
                 RevitLinkInstance elem = doc.GetElement(refElemLinked.ElementId) as RevitLinkInstance;
                 Document docLinked = elem.GetLinkDocument();
                 Element linkedelement = docLinked.GetElement(refElemLinked.LinkedElementId);
+
+     
+
+
                 label1.Text += "\n" + linkedelement.Name;
                 label4.Text += "\n" + linkedelement.Category.Name.ToString();
             }
@@ -497,11 +501,45 @@ namespace ClassLibrary1
             {
                 Document doc = rvtIns.GetLinkDocument();
                 Element element = doc.GetElement(reference.LinkedElementId);
-                if (element.Category.Name is "Walls")
+                if (element.Category.Name is "Project Base Point")
                 {
                     return true;
                 }
                 return false;
+            }
+        }
+
+        private void button7_Click(object sender, EventArgs e)
+        {
+            ElementCategoryFilter filter = new ElementCategoryFilter(BuiltInCategory.OST_ProjectBasePoint);
+            FilteredElementCollector collector = new FilteredElementCollector(doc);
+            IList<Element> elements = collector.WherePasses(filter).ToElements();
+            foreach (Element element in elements)
+
+            {
+                double x = element.get_Parameter(BuiltInParameter.BASEPOINT_EASTWEST_PARAM).AsDouble();
+                double ang = element.get_Parameter(BuiltInParameter.BASEPOINT_ANGLETON_PARAM).AsDouble();
+                label1.Text += "\n" + x;
+                label3.Text += "\n" + element.Id;
+                label4.Text += "\n" + ang;
+            }
+        }
+
+        private void button8_Click(object sender, EventArgs e)
+        {
+
+            
+
+            IList<Element> revitLinks = new FilteredElementCollector(doc).OfCategory(BuiltInCategory.OST_RvtLinks).WhereElementIsNotElementType().ToElements();
+            foreach(RevitLinkInstance link in revitLinks)
+            {
+                Document linkDoc = link.GetLinkDocument();
+                ProjectPosition pos = linkDoc.ActiveProjectLocation.GetProjectPosition(XYZ.Zero);
+                double lpbpEW = pos.EastWest;
+                double lpbpNS = pos.NorthSouth;
+                double lpbpElev = pos.Elevation;
+                double lpbpAngle = pos.Angle;
+                label1.Text += "\n" + lpbpEW + "\n" + lpbpNS + "\n" + lpbpElev + "\n" + lpbpAngle;
             }
         }
     }
