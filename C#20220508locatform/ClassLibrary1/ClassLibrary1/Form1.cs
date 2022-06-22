@@ -345,34 +345,37 @@ namespace ClassLibrary1
                 BoundingBoxXYZ bbxyz = element.get_BoundingBox(null);
 
                 Outline outline = new Outline(bbxyz.Min, bbxyz.Max);
+                label1.Text += "\n" + bbxyz.Min.ToString();
+                label2.Text += "\n" + bbxyz.Max.ToString();
+
 
                 BoundingBoxIntersectsFilter filter = new BoundingBoxIntersectsFilter(outline);
 
                 IList<Element> inter = new FilteredElementCollector(doc).WherePasses(filter).WhereElementIsNotElementType().ToElements();
                 StringBuilder stringBuilder = new StringBuilder("this elment is " + element.Category.Name + "\n");
-                stringBuilder.Append("-------------------------" + "\n");
+                //stringBuilder.Append("-------------------------" + "\n");
 
 
 
-                foreach (Element elementfilter in inter)
-                {
-                    LocationPoint Lp = elementfilter.Location as LocationPoint;
-                    LocationCurve Lc = elementfilter.Location as LocationCurve;
+                //foreach (Element elementfilter in inter)
+                //{
+                //    LocationPoint Lp = elementfilter.Location as LocationPoint;
+                //    LocationCurve Lc = elementfilter.Location as LocationCurve;
 
-                    stringBuilder.Append("Category : " + elementfilter.Category.Name + ", ElementID : " + elementfilter.Id.ToString() + "\n");
-                    if (Lp != null)
-                    {
-                        stringBuilder.Append(Lp.Point.ToString() + "\n");
-                    }
-                    else if (Lc != null)
-                    {
-                        stringBuilder.Append(Lc.Curve.GetEndPoint(1).ToString() + " " + Lc.Curve.GetEndPoint(0).ToString() + "\n");
-                    }
-                }
+                //    stringBuilder.Append("Category : " + elementfilter.Category.Name + ", ElementID : " + elementfilter.Id.ToString() + "\n");
+                //    if (Lp != null)
+                //    {
+                //        stringBuilder.Append(Lp.Point.ToString() + "\n");
+                //    }
+                //    else if (Lc != null)
+                //    {
+                //        stringBuilder.Append(Lc.Curve.GetEndPoint(1).ToString() + " " + Lc.Curve.GetEndPoint(0).ToString() + "\n");
+                //    }
+                //}
 
-                stringBuilder.Append("-------------------------" + "\n");
+                //stringBuilder.Append("-------------------------" + "\n");
 
-                label1.Text += "\n" + stringBuilder.ToString();
+                //label1.Text += "\n" + stringBuilder.ToString();
 
             }
 
@@ -417,36 +420,40 @@ namespace ClassLibrary1
 
         private void button4_Click(object sender, EventArgs e)
         {
-
-            Reference refElemLinked = uidoc.Selection.PickObject(ObjectType.LinkedElement, "Select edge");
-            RevitLinkInstance elem = doc.GetElement(refElemLinked.ElementId) as RevitLinkInstance;
-            Document docLinked = elem.GetLinkDocument();
-
-            Element linkedelement = docLinked.GetElement(refElemLinked.LinkedElementId);
-
-            LocationPoint Lp = linkedelement.Location as LocationPoint;
-            LocationCurve Lc = linkedelement.Location as LocationCurve;
-            if (Lp != null)
+            ISelectionFilter selFilter = new SelectionFilter();
+            IList<Reference> references = uiapp.ActiveUIDocument.Selection.PickObjects(ObjectType.LinkedElement, "pick Objects");
+            foreach (Reference refElemLinked in references)
             {
-                label1.Text += "\n" + linkedelement.Name;
-                label2.Text += "\n" + Lp.Point.ToString();
+                RevitLinkInstance elem = doc.GetElement(refElemLinked.ElementId) as RevitLinkInstance;
+                Document docLinked = elem.GetLinkDocument();
+                Element linkedelement = docLinked.GetElement(refElemLinked.LinkedElementId);
+                LocationPoint Lp = linkedelement.Location as LocationPoint;
+                LocationCurve Lc = linkedelement.Location as LocationCurve;
+                if (Lp != null)
+                {
+                    label1.Text += "\n" + linkedelement.Name;
+                    label2.Text += "\n" + Lp.Point.ToString();
+                }
+                else if (Lc != null)
+                {
+                    label1.Text += "\n" + linkedelement.Name;
+                    label2.Text += "\n" + Lc.Curve.GetEndPoint(1).ToString() + " " + Lc.Curve.GetEndPoint(0).ToString();
+                }
             }
-            else if (Lc != null)
-            {
-                label1.Text += "\n" + linkedelement.Name;
-                label2.Text += "\n" + Lc.Curve.GetEndPoint(1).ToString() + " " + Lc.Curve.GetEndPoint(0).ToString();
-            }
+
+          
+ 
+            
         }
 
         private void button5_Click(object sender, EventArgs e)
         {
 
-
+            IList<Reference> references = uiapp.ActiveUIDocument.Selection.PickObjects(ObjectType.Element, "pick Objects");
             ICollection<ElementId> ElementId = sel.GetElementIds();
-
-            foreach (ElementId eleid in ElementId)
+            foreach (Reference refelement in references)
             {
-                Element ele = doc.GetElement(eleid);
+                Element ele = doc.GetElement(refelement.ElementId);
                 LocationPoint Lp = ele.Location as LocationPoint;
                 LocationCurve Lc = ele.Location as LocationCurve;
                 if (Lp != null)
@@ -457,7 +464,7 @@ namespace ClassLibrary1
                 else if (Lc != null)
                 {
                     label1.Text += "\n" + ele.Name;
-                    label4.Text += "\n" + Lc.Curve.GetEndPoint(1).ToString() + " " + Lc.Curve.GetEndPoint(0).ToString();
+                    label2.Text += "\n" + Lc.Curve.GetEndPoint(1).ToString() + " " + Lc.Curve.GetEndPoint(0).ToString();
                 }
             }
         }
@@ -468,18 +475,19 @@ namespace ClassLibrary1
             ISelectionFilter selFilter = new SelectionFilter();
             IList<Reference> references = uiapp.ActiveUIDocument.Selection.PickObjects(ObjectType.LinkedElement,selFilter, "pick Objects");
 
-            MessageBox.Show(references.Count.ToString());
             foreach (Reference refElemLinked in references)
             {
                 RevitLinkInstance elem = doc.GetElement(refElemLinked.ElementId) as RevitLinkInstance;
                 Document docLinked = elem.GetLinkDocument();
                 Element linkedelement = docLinked.GetElement(refElemLinked.LinkedElementId);
 
-     
-
+                BoundingBoxXYZ bbxyz = linkedelement.get_BoundingBox(null);
+                Outline outline = new Outline(bbxyz.Min, bbxyz.Max);
+                label3.Text += "\n" + bbxyz.Min.ToString();
+                label4.Text += "\n" + bbxyz.Max.ToString();
 
                 label1.Text += "\n" + linkedelement.Name;
-                label4.Text += "\n" + linkedelement.Category.Name.ToString();
+                label2.Text += "\n" + linkedelement.Category.Name.ToString();
             }
 
         }
