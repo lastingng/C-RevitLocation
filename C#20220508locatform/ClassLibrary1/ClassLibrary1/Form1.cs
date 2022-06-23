@@ -550,5 +550,21 @@ namespace ClassLibrary1
                 label1.Text += "\n" + lpbpEW + "\n" + lpbpNS + "\n" + lpbpElev + "\n" + lpbpAngle;
             }
         }
+
+        public static XYZ GetIntersectionPoint(Element element, Element secondElement)
+        {
+            IntersectionResultArray intersectionResultArray = null;
+            XYZ point = null;
+            LocationCurve hostLocation = element.Location as LocationCurve;
+            Curve hostCurve = hostLocation.Curve;
+            LocationCurve locationCurve = secondElement.Location as LocationCurve;
+            Curve curve = locationCurve.Curve;
+            hostCurve.Intersect(curve, out intersectionResultArray);
+            foreach (IntersectionResult intersectionResult in intersectionResultArray)
+            {
+                point = intersectionResult.XYZPoint;
+            }
+            return point;
+        }
     }
 }
