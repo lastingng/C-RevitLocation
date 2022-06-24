@@ -575,10 +575,12 @@ namespace ClassLibrary1
 
             RevitLinkInstance elem = doc.GetElement(elementSelectB10.ElementId) as RevitLinkInstance;
             Document docLinked = elem.GetLinkDocument();
-            Element ele2 = docLinked.GetElement(elementSelectB10.LinkedElementId);
-            Element ele1 = doc.GetElement(elementSelectB9.ElementId);
-            MessageBox.Show(ele2.Name.ToString());
-            MessageBox.Show(GetIntersectionPoint(ele2, ele1).ToString());
+            Element ele1 = docLinked.GetElement(elementSelectB10.LinkedElementId);
+            Element ele2 = doc.GetElement(elementSelectB9.ElementId);
+            MessageBox.Show(GetCurveIntersectionPoint(ele1,ele2).ToString());
+
+
+
         }
 
 
@@ -589,6 +591,7 @@ namespace ClassLibrary1
             LocationCurve hostLocation = element.Location as LocationCurve;
             Curve hostCurve = hostLocation.Curve;
             LocationCurve locationCurve = secondElement.Location as LocationCurve;
+            
             Curve curve = locationCurve.Curve;
             MessageBox.Show(curve.GetEndPoint(1).ToString());
             hostCurve.Intersect(curve, out intersectionResultArray);
@@ -603,6 +606,39 @@ namespace ClassLibrary1
             catch {
                 return null;
             }
+        }
+
+
+        public static XYZ GetCurveIntersectionPoint(Element hostElement, Element targetElement)
+        {
+            LocationCurve hostLc = hostElement.Location as LocationCurve;
+            LocationCurve targetLc = targetElement.Location as LocationCurve;
+            Curve targetCurve = targetLc.Curve;
+
+            XYZ hostStartCurve = hostLc.Curve.GetEndPoint(0);
+            XYZ hostEndCurve = hostLc.Curve.GetEndPoint(1);
+            XYZ targetStartCurve = targetLc.Curve.GetEndPoint(0);
+            XYZ targetEndCurve = targetLc.Curve.GetEndPoint(1);
+
+            XYZ hostStartPoint = new XYZ(hostStartCurve.X, hostStartCurve.Y, targetStartCurve.Z);
+            XYZ hostEndPoint = new XYZ(hostEndCurve.X,hostEndCurve.Y, targetStartCurve.Z);
+
+            Line hostLine = Line.CreateBound(hostStartPoint, hostEndPoint);
+
+            IntersectionResultArray intersectionResultArray = null;
+            XYZ point = null;
+
+            hostLine.Intersect(targetCurve, out intersectionResultArray);
+
+            foreach (IntersectionResult intersectionResult in intersectionResultArray)
+            {
+                if (intersectionResult != null)
+                {
+
+                    point = intersectionResult.XYZPoint;
+                }
+            }
+            return point;
         }
     }
 }
