@@ -551,6 +551,37 @@ namespace ClassLibrary1
             }
         }
 
+
+
+        Reference elementSelectB9;
+        Reference elementSelectB10;
+
+        private void button9_Click(object sender, EventArgs e)
+        {
+            elementSelectB9 = uidoc.Selection.PickObject(ObjectType.Element, "pick Objects");
+            Element ele1 = doc.GetElement(elementSelectB9.ElementId);
+            MessageBox.Show(ele1.Name.ToString());
+        }
+
+        private void button10_Click(object sender, EventArgs e)
+        {
+            elementSelectB10 = uiapp.ActiveUIDocument.Selection.PickObject(ObjectType.LinkedElement, "pick Objects");
+
+
+        }
+
+        private void button11_Click(object sender, EventArgs e)
+        {
+
+            RevitLinkInstance elem = doc.GetElement(elementSelectB10.ElementId) as RevitLinkInstance;
+            Document docLinked = elem.GetLinkDocument();
+            Element ele2 = docLinked.GetElement(elementSelectB10.LinkedElementId);
+            Element ele1 = doc.GetElement(elementSelectB9.ElementId);
+            MessageBox.Show(ele2.Name.ToString());
+            MessageBox.Show(GetIntersectionPoint(ele2, ele1).ToString());
+        }
+
+
         public static XYZ GetIntersectionPoint(Element element, Element secondElement)
         {
             IntersectionResultArray intersectionResultArray = null;
@@ -559,12 +590,19 @@ namespace ClassLibrary1
             Curve hostCurve = hostLocation.Curve;
             LocationCurve locationCurve = secondElement.Location as LocationCurve;
             Curve curve = locationCurve.Curve;
+            MessageBox.Show(curve.GetEndPoint(1).ToString());
             hostCurve.Intersect(curve, out intersectionResultArray);
-            foreach (IntersectionResult intersectionResult in intersectionResultArray)
+            try
             {
-                point = intersectionResult.XYZPoint;
+                foreach (IntersectionResult intersectionResult in intersectionResultArray)
+                {
+                    point = intersectionResult.XYZPoint;
+                }
+                return point;
             }
-            return point;
+            catch {
+                return null;
+            }
         }
     }
 }
