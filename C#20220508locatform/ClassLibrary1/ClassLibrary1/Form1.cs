@@ -637,12 +637,12 @@ namespace ClassLibrary1
             trans.Commit();
 
             trans.Start("starting");
-            double ang = 90;
+            double ang = 45 * Math.PI / 180;
             Element element = familyInstance as Element;
             BoundingBoxXYZ bbxyz = element.get_BoundingBox(null);
-            Line axis = Line.CreateBound(bbxyz.Min, bbxyz.Max);
+            Line axis = Line.CreateBound(setPosition, bbxyz.Max);
             MessageBox.Show("try to rotate that");
-            ElementTransformUtils.RotateElement(doc, element.Id, axis, ang);
+            ElementTransformUtils.RotateElement(doc, familyInstance.Id ,axis,ang);
 
             trans.Commit();
 
@@ -725,8 +725,7 @@ namespace ClassLibrary1
         private void button12_Click(object sender, EventArgs e)
         {
             Element element = doc.GetElement(new ElementId(10809873)) as Element;
-            MessageBox.Show(element.Name.ToString());
-               
+            MessageBox.Show(element.Name.ToString());             
         }
     }
 }
