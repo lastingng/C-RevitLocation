@@ -39,6 +39,15 @@ namespace ClassLibrary1
             label1.Text = "S1:";
             label2.Text = "S2:";
             label3.Text = "Dim";
+            FilteredElementCollector collector = new FilteredElementCollector(doc).OfClass(typeof(Level));
+
+            foreach (Level level in collector)
+
+            {
+
+                comboBox1.Items.Add(level.Name.ToString());
+
+            }
         }
 
         private void test_Click(object sender, EventArgs e)
@@ -441,9 +450,9 @@ namespace ClassLibrary1
                 }
             }
 
-          
- 
-            
+
+
+
         }
 
         private void button5_Click(object sender, EventArgs e)
@@ -473,7 +482,7 @@ namespace ClassLibrary1
         {
 
             ISelectionFilter selFilter = new SelectionFilter();
-            IList<Reference> references = uiapp.ActiveUIDocument.Selection.PickObjects(ObjectType.LinkedElement,selFilter, "pick Objects");
+            IList<Reference> references = uiapp.ActiveUIDocument.Selection.PickObjects(ObjectType.LinkedElement, selFilter, "pick Objects");
 
             foreach (Reference refElemLinked in references)
             {
@@ -536,10 +545,10 @@ namespace ClassLibrary1
         private void button8_Click(object sender, EventArgs e)
         {
 
-            
+
 
             IList<Element> revitLinks = new FilteredElementCollector(doc).OfCategory(BuiltInCategory.OST_RvtLinks).WhereElementIsNotElementType().ToElements();
-            foreach(RevitLinkInstance link in revitLinks)
+            foreach (RevitLinkInstance link in revitLinks)
             {
                 Document linkDoc = link.GetLinkDocument();
                 ProjectPosition pos = linkDoc.ActiveProjectLocation.GetProjectPosition(XYZ.Zero);
@@ -575,9 +584,60 @@ namespace ClassLibrary1
 
             RevitLinkInstance elem = doc.GetElement(elementSelectB10.ElementId) as RevitLinkInstance;
             Document docLinked = elem.GetLinkDocument();
-            Element ele1 = docLinked.GetElement(elementSelectB10.LinkedElementId);
-            Element ele2 = doc.GetElement(elementSelectB9.ElementId);
-            MessageBox.Show(GetCurveIntersectionPoint(ele1,ele2).ToString());
+            Element ele1 = doc.GetElement(elementSelectB9.ElementId);
+            Element ele2 = docLinked.GetElement(elementSelectB10.LinkedElementId);
+            FilteredElementCollector collector = new FilteredElementCollector(doc).OfClass(typeof(Level));
+
+            FilteredElementCollector filterModel = new FilteredElementCollector(doc).OfClass(typeof(FamilySymbol)).OfCategory(BuiltInCategory.OST_GenericModel);
+            FamilySymbol familyModel = filterModel.FirstElement() as FamilySymbol;
+            FamilySymbol selectedModel = null;
+
+            foreach (FamilySymbol symbol in filterModel)
+            {
+                if (symbol.Name == "Rect_Opening")
+                {
+                    selectedModel = symbol; 
+                    break;
+                }
+
+            }
+
+            XYZ setPosition = null;
+            Level positionLevel = null;
+            try
+            {
+                setPosition = GetCurveIntersectionPoint(ele1, ele2);
+
+                label1.Text += "\n" + setPosition.ToString();
+                MessageBox.Show(setPosition.ToString());
+                foreach (Level level in collector)
+                {
+                    if (comboBox1.Text == level.Name.ToString())
+                    {
+                        positionLevel = level;
+                        break;
+                    }
+                }
+            }
+            catch
+            {
+                MessageBox.Show("Error");
+            }
+            Transaction trans = new Transaction(doc);
+            trans.Start("starting");
+
+            if (familyModel.IsActive == false)
+            {
+                familyModel.Activate();
+                doc.Regenerate();
+            }
+            
+            doc.Create.NewFamilyInstance(setPosition, selectedModel, positionLevel, Autodesk.Revit.DB.Structure.StructuralType.NonStructural);
+
+
+            trans.Commit();
+
+
 
 
 
@@ -591,7 +651,7 @@ namespace ClassLibrary1
             LocationCurve hostLocation = element.Location as LocationCurve;
             Curve hostCurve = hostLocation.Curve;
             LocationCurve locationCurve = secondElement.Location as LocationCurve;
-            
+
             Curve curve = locationCurve.Curve;
             MessageBox.Show(curve.GetEndPoint(1).ToString());
             hostCurve.Intersect(curve, out intersectionResultArray);
@@ -603,7 +663,8 @@ namespace ClassLibrary1
                 }
                 return point;
             }
-            catch {
+            catch
+            {
                 return null;
             }
         }
@@ -620,25 +681,36 @@ namespace ClassLibrary1
             XYZ targetStartCurve = targetLc.Curve.GetEndPoint(0);
             XYZ targetEndCurve = targetLc.Curve.GetEndPoint(1);
 
-            XYZ hostStartPoint = new XYZ(hostStartCurve.X, hostStartCurve.Y, targetStartCurve.Z);
-            XYZ hostEndPoint = new XYZ(hostEndCurve.X,hostEndCurve.Y, targetStartCurve.Z);
 
+            XYZ targetStartPoint = new XYZ(targetStartCurve.X, targetStartCurve.Y, targetStartCurve.Z);
+            XYZ targetEndPoint = new XYZ(targetEndCurve.X, targetEndCurve.Y, targetStartCurve.Z);
+
+            XYZ hostStartPoint = new XYZ(hostStartCurve.X, hostStartCurve.Y, targetStartCurve.Z);
+            XYZ hostEndPoint = new XYZ(hostEndCurve.X, hostEndCurve.Y, targetStartCurve.Z);
+
+            Line targetLine = Line.CreateBound(targetStartPoint, targetEndPoint);
             Line hostLine = Line.CreateBound(hostStartPoint, hostEndPoint);
 
             IntersectionResultArray intersectionResultArray = null;
             XYZ point = null;
 
-            hostLine.Intersect(targetCurve, out intersectionResultArray);
+            hostLine.Intersect(targetLine, out intersectionResultArray);
 
             foreach (IntersectionResult intersectionResult in intersectionResultArray)
             {
                 if (intersectionResult != null)
                 {
 
-                    point = intersectionResult.XYZPoint;
+                    XYZ pointXYZ = intersectionResult.XYZPoint;
+                    point =  new XYZ(pointXYZ.X, pointXYZ.Y, hostStartCurve.Z); 
                 }
             }
             return point;
+        }
+
+        private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
         }
     }
 }
