@@ -445,6 +445,7 @@ namespace ClassLibrary1
                 }
                 else if (Lc != null)
                 {
+                    label4.Text += "\n" + Angle(Lc.Curve.GetEndPoint(0), Lc.Curve.GetEndPoint(1));
                     label1.Text += "\n" + linkedelement.Name;
                     label2.Text += "\n" + Lc.Curve.GetEndPoint(1).ToString() + " " + Lc.Curve.GetEndPoint(0).ToString();
                 }
@@ -478,6 +479,8 @@ namespace ClassLibrary1
             }
         }
 
+
+
         private void button6_Click(object sender, EventArgs e)
         {
 
@@ -499,6 +502,13 @@ namespace ClassLibrary1
                 label2.Text += "\n" + linkedelement.Category.Name.ToString();
             }
 
+        }
+
+        private double Angle(XYZ start, XYZ end)
+        {
+            const double Rad2Deg = 180.0 / Math.PI;
+            const double Deg2Rad = Math.PI / 180.0;
+            return Math.Atan2(start.Y - end.Y, end.X - start.X) * Rad2Deg;
         }
 
         public class SelectionFilter : ISelectionFilter
@@ -596,7 +606,7 @@ namespace ClassLibrary1
             {
                 if (symbol.Name == "Rect_Opening")
                 {
-                    selectedModel = symbol; 
+                    selectedModel = symbol;
                     break;
                 }
 
@@ -637,12 +647,13 @@ namespace ClassLibrary1
             trans.Commit();
 
             trans.Start("starting");
-            double ang = 45 * Math.PI / 180;
+            double ang = -72 * Math.PI / 180;
             Element element = familyInstance as Element;
             BoundingBoxXYZ bbxyz = element.get_BoundingBox(null);
-            Line axis = Line.CreateBound(setPosition, bbxyz.Max);
+            XYZ bbxyzhigh = setPosition.Add(XYZ.BasisZ);
+            Line axis = Line.CreateBound(setPosition, bbxyzhigh);
             MessageBox.Show("try to rotate that");
-            ElementTransformUtils.RotateElement(doc, familyInstance.Id ,axis,ang);
+            ElementTransformUtils.RotateElement(doc, familyInstance.Id, axis, ang);
 
             trans.Commit();
 
@@ -711,7 +722,7 @@ namespace ClassLibrary1
                 {
 
                     XYZ pointXYZ = intersectionResult.XYZPoint;
-                    point =  new XYZ(pointXYZ.X, pointXYZ.Y, hostStartCurve.Z); 
+                    point = new XYZ(pointXYZ.X, pointXYZ.Y, hostStartCurve.Z);
                 }
             }
             return point;
@@ -725,7 +736,7 @@ namespace ClassLibrary1
         private void button12_Click(object sender, EventArgs e)
         {
             Element element = doc.GetElement(new ElementId(10809873)) as Element;
-            MessageBox.Show(element.Name.ToString());             
+            MessageBox.Show(element.Name.ToString());
         }
     }
 }
